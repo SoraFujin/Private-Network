@@ -1,2 +1,25 @@
 #vscode
 .vscode/
+
+# Ignore compiled binaries
+*.o
+*.a
+*.out
+*.exe
+*.dll
+
+# Ignore build directories
+build/
+bin/
+obj/
+
+# Ignore backup files and logs
+*.log
+*.bak
+*.swp
+*.swo
+
+# Ignore other IDE-specific files
+.vscode/
+.idea/
+
