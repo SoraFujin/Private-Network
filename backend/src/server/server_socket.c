@@ -121,10 +121,17 @@ int main ()
         // in c Strings are null terminated, which means they end with a '\0', if it is not manually added or checked after reading the data the string might be invalide 
         client_data_size = read(new_socket, buffer, 1024 - 1);
         // When the clinet disconnected the data size will be 0, therefore its good practice to check when the clinet is disconnected.
-        if (client_data_size == 0)
+        if (client_data_size <= 0)
         {
-            printf("Clinet disconnected\n");
-            break;
+            if (client_data_size == 0)
+            {
+                printf("Clinet disconnected\n");
+                break;
+            } 
+            else 
+            {
+                perror("Read Failed\n");
+                continue;
         }
         buffer[client_data_size] = '\0';
         printf("Received: %s\n", buffer);
