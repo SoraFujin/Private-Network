@@ -1,18 +1,46 @@
 {
-  "configurations": [
-    {
-      "name": "windows-gcc-x86",
-      "includePath": [
-        "${workspaceFolder}/**"
-      ],
-      "compilerPath": "C:/MinGW/bin/gcc.exe",
-      "cStandard": "${default}",
-      "cppStandard": "${default}",
-      "intelliSenseMode": "windows-gcc-x86",
-      "compilerArgs": [
-        ""
-      ]
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "name": "windows-gcc-x86",
+            "includePath": [
+                "C:/MinGW/msys/1.0/include",
+                "c:/Users/Ahmad-Diab/Desktop/Coding/PrivateNetwork/**",
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.22000.0",
+            "compilerPath": "C:/MinGW/bin/gcc.exe",
+            "intelliSenseMode": "windows-gcc-x86",
+            // "compilerPathInCppPropertiesJson": "C:/MinGW/bin/gcc.exe",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "c:/Users/Ahmad-Diab/Desktop/Coding/PrivateNetwork/**",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "cStandard": "c99"
+        },
+        {
+            "name": "MinGW",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.22000.0",
+            "compilerPath": "cl.exe",
+            "cStandard": "c99",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
 }

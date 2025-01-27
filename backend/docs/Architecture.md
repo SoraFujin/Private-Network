@@ -46,3 +46,49 @@ Network Byte Order:
 
 ---
 
+```
+backend/
+├── docs/                      # Documentation and explanations
+├── include/                   # Header files for reusable code
+│   ├── http_server.h          # Declarations for HTTP server functions
+│   ├── websocket_server.h     # (Optional) WebSocket declarations
+│   ├── json_handler.h         # JSON serialization/deserialization functions
+│   └── utils.h                # General utilities (logging, helpers, etc.)
+├── lib/                       # Libraries (optional)
+│   └── (Add custom or third-party libraries like libmicrohttpd or cJSON here)
+├── output/                    # Compiled executables
+├── src/                       # Core source code
+│   ├── application_layer/     # Application-specific logic (e.g., data processing)
+│   ├── client/                # Logic for client-side operations (if needed)
+│   ├── connection/            # Handles network connections
+│   │   ├── http_server.c      # HTTP server implementation
+│   │   └── websocket_server.c # WebSocket implementation (if used)
+│   ├── data_link_layer/       # Data link layer operations (if applicable)
+│   ├── encryption/            # Encryption algorithms and logic
+│   ├── network_layer/         # Network-layer logic
+│   ├── physical_layer/        # Physical-layer logic (e.g., hardware-specific code)
+│   ├── protocols/             # Protocol-specific code
+│   │   ├── rest_protocol.c    # REST API handling logic
+│   │   ├── json_handler.c     # JSON serialization/deserialization
+│   │   └── (Other protocols if needed)
+│   ├── security/              # Security-related code (authentication, etc.)
+│   ├── server/                # Server entry point
+│   │   └── server_main.c      # Main server file
+│   ├── tests/                 # Unit tests
+│   ├── transport_layer/       # Transport layer operations
+│   └── utils/                 # General utilities (logging, error handling, etc.)
+└── server.c                   # High-level server entry point
+```
+
+
+**The Project will be cut into different Phases**:
+# Phase 1 Milestones:
+1. **Basic Socket Communication**: Server and client communicating over a specific port.
+2. **Basic Logging**: Log file storing connection details (IPs, timestamps).
+3. **Secure Communication**: TLS/SSL encryption, token-based authentication.
+4. **Custom Protocol**: Define and implement a custom protocol for communication.
+5. **File Access**: Encrypted file storage and retrieval with token-based access levels.
+
+---
+
+# 1. Basic Socket Communication:
