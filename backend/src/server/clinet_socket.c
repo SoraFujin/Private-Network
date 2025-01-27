@@ -7,66 +7,134 @@
 #include <unistd.h>
 
 #define PORT 7777
+#define MAX_BUFFER 1024
 
-// Main improvements:
-// Option to add the ip server to connect to
-// Option to send specific data to the server
-// Option to close the connection when needed
-// Option to restart the connection 
 int main()
 {
-    int status, data_size, client_fd;
+    int client_fd, status, data_size;
     struct sockaddr_in server_addr;
-    char* data = malloc(64 * sizeof(char));
-    char buffer[1024] = { 0 };
+    char *data = NULL, buffer[MAX_BUFFER] = {0};
 
-    client_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if(client_fd < 0)
+    // Allocate memory for data buffer
+    data = malloc(64 * sizeof(char));
+    if (!data)
     {
-        perror("Client Socket error\n");
+        perror("Failed to allocate memory for data");
+        return -1;
+    }
+
+    // Allocate memory for IP address input
+    char *ip_addr_con = malloc(16 * sizeof(char));
+    if (!ip_addr_con)
+    {
+        perror("Failed to allocate memory for IP address");
+        free(data);
+        return -1;
+    }
+
+    // Create the client socket
+    client_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (client_fd < 0)
+    {
+        perror("Socket creation failed");
+        free(data);
+        free(ip_addr_con);
         return -1;
     }
     printf("Socket created successfully\n");
 
+    // Initialize server address structure
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
 
-    char* ip_addr_con = malloc(16 * sizeof(char));  // Allocate memory for the IP address string
-    if (ip_addr_con == NULL) {
-        perror("Memory allocation failed");
-        return -1;
-    }
-
-    printf("Enter the IP address to connect to: \n");
-    scanf("%s", ip_addr_con);  // Read the IP address from the user
-
-    // Convert the IP address to binary form
-    int ip_addr = inet_pton(AF_INET, ip_addr_con, &server_addr.sin_addr);
-    if (ip_addr <= 0) {
-        printf("\n Invalid address/ Address not supported \n");
-        free(ip_addr_con);  // Free allocated memory
-        return -1;
-    }
-
-    status = connect(client_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));
-    if(status < 0)
+    while (1) // Loop to get a valid IP address
     {
-        printf("Connection failed\n");
+        printf("Enter the server IP address (e.g., 127.0.0.1): ");
+        if (!fgets(ip_addr_con, 16, stdin))
+        {
+            perror("Failed to read IP address");
+            free(data);
+            free(ip_addr_con);
+            close(client_fd);
+            return -1;
+        }
+
+        // Remove newline character from input
+        ip_addr_con[strcspn(ip_addr_con, "\n")] = '\0';
+
+        // Convert IP address from text to binary
+        if (inet_pton(AF_INET, ip_addr_con, &server_addr.sin_addr) <= 0)
+        {
+            printf("Invalid IP address. Please try again.\n");
+            continue; // Retry entering the IP
+        }
+        break;
+    }
+
+    // Attempt to connect to the server
+    status = connect(client_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    if (status < 0)
+    {
+        perror("Connection to server failed");
+        free(data);
+        free(ip_addr_con);
+        close(client_fd);
         return -1;
     }
-    printf("Send message to server\n");
-    fgets(data, 64, stdin);
-    data[strcspn(data, "\n")] = '\0';
+    printf("Connected to the server successfully.\n");
 
-    send(client_fd, data, strlen(data), 0);
-    printf("Hello Message sent\n");
+    while (1) // Main communication loop
+    {
+        printf("Enter message to send (type 'exit' to quit): ");
+        if (!fgets(data, 64, stdin))
+        {
+            perror("Failed to read input");
+            break;
+        }
 
+        // Remove newline character from input
+        data[strcspn(data, "\n")] = '\0';
+
+        // Check for exit condition
+        if (strcmp(data, "exit") == 0)
+        {
+            printf("Closing connection...\n");
+            break;
+        }
+
+        // Send the message to the server
+        status = send(client_fd, data, strlen(data), 0);
+        if (status < 0)
+        {
+            perror("Failed to send message");
+            break;
+        }
+        printf("Message sent: %s\n", data);
+
+        // Receive response from the server
+        data_size = read(client_fd, buffer, MAX_BUFFER - 1);
+        if (data_size < 0)
+        {
+            perror("Failed to receive message");
+            break;
+        }
+        else if (data_size == 0)
+        {
+            printf("Server closed the connection.\n");
+            break;
+        }
+        else
+        {
+            buffer[data_size] = '\0'; // Null-terminate received data
+            printf("Server response: %s\n", buffer);
+        }
+    }
+
+    // Clean up resources
     free(data);
-
-    data_size = read(client_fd, buffer, 1024 - 1);
-    /* printf("%s\n", buffer); */
-
+    free(ip_addr_con);
     close(client_fd);
+    printf("Connection closed. Goodbye!\n");
 
     return 0;
 }

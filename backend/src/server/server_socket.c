@@ -1,10 +1,10 @@
+#include <netinet/in.h>
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
-#define PORT 7777
 
 int main ()
 {
@@ -21,6 +21,10 @@ int main ()
                                // After the server listens to incoming request and accept, the new_socket is used to send and receive data between the server and client
                                // Basiclly we need 2 sockets, one that listens to a specific port and address, and the other to receive and send data to the client
 
+    const in_port_t port = 7777;
+    const in_addr_t addr = inet_addr("127.0.0.1");
+    /* struct in_addr s_addr; */
+    /* s_addr.s_addr = 127.0.0.1; */
     // for starting, i am sending a specific message to the client, and receiving a small data size, later on it will accept the data daynamically
     // for testing at the start messages sent and received will be static
     ssize_t client_data_size;
@@ -69,10 +73,10 @@ int main ()
 
     // The specific information for binding the socket, ip address type, port, and ip address for the socket 
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT);
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); // This is used to bind the server to a specific ip address
-                                                          // The ip addresses it can accpet, for testing i will use the local host ip address 
-                                                          // for later will change to INADDR_ANY to allow the server to accept connection on any of the host's network interfaces
+    server_addr.sin_port = htons(port);
+    server_addr.sin_addr.s_addr = addr; // This is used to bind the server to a specific ip address
+                                        // The ip addresses it can accpet, for testing i will use the local host ip address 
+                                        // for later will change to INADDR_ANY to allow the server to accept connection on any of the host's network interfaces
 
     int bind_socket = bind(socket_fd,(struct sockaddr *) &server_addr,sizeof(server_addr));
 
@@ -82,7 +86,7 @@ int main ()
         perror("Bind Failed. \n");
         return -1;
     }
-    printf("Socket bound to port %d successfully\n", PORT);
+    printf("Socket bound to port %d successfully\n", port);
 
     // Making the socket listen to the specified port and wait for connection
     // the value 7 (backlog) means the server can accept up to 3 connection in the waiting queue at once, if there are more than 3 connection the connection will be dropped.
@@ -93,7 +97,7 @@ int main ()
         perror("Listen Failed");
         return -1;
     }
-    printf("Server is listening for connections on port %d\n", PORT);
+    printf("Server is listening for connections on port %d\n", port);
 
     // This will keep the connection opened to accept multiple connection from different clients
     // There is 2 ways that can be used to handle connections:
@@ -119,30 +123,38 @@ int main ()
         // This ensures the buffer will not overflow when storing incoming data
         // Thus the read() will read up to   1024 - 1 bytes from the socket into the buffer and returns the number of bytes it actually read (Stored in client_data_size).
         // in c Strings are null terminated, which means they end with a '\0', if it is not manually added or checked after reading the data the string might be invalide 
-        client_data_size = read(new_socket, buffer, 1024 - 1);
-        // When the clinet disconnected the data size will be 0, therefore its good practice to check when the clinet is disconnected.
-        if (client_data_size <= 0)
+        while (1)
         {
-            if (client_data_size == 0)
+            client_data_size = read(new_socket, buffer, sizeof(buffer) - 1);
+            // When the clinet disconnected the data size will be 0, therefore its good practice to check when the clinet is disconnected.
+            if (client_data_size <= 0)
             {
-                printf("Clinet disconnected\n");
+                if (client_data_size == 0)
+                {
+                    printf("Client disconnected\n");
+                    /* close(new_socket); */
+                    /* continue; */
+                } 
+                else 
+                {
+                    perror("Read Failed\n");
+                    /* close(new_socket); */
+                    /* continue; */
+                }
                 break;
-            } 
-            else 
-            {
-                perror("Read Failed\n");
-                continue;
+            }
+            buffer[client_data_size] = '\0';
+            printf("Received: %s\n", buffer);
+
+            // This sends data back to the client using new_socket connection
+            send(new_socket, hello, strlen(hello), 0);
+            printf("Hello message sent\n");
         }
-        buffer[client_data_size] = '\0';
-        printf("Received: %s\n", buffer);
 
-        // This sends data back to the client using new_socket connection
-        send(new_socket, hello, strlen(hello), 0);
-        printf("Hello message sent\n");
-
+        // This closes the connection with the new_socket, once the communication with the client is done, we should close the socket to free up resources.
+        close(new_socket);
     }
-    // This closes the connection with the new_socket, once the communication with the client is done, we should close the socket to free up resources.
-    close(new_socket);
 
+    close(socket_fd);
     return 0;
 }
