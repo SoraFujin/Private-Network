@@ -6,7 +6,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#define PORT 7777
 #define MAX_BUFFER 1024
 
 int main()
@@ -15,6 +14,7 @@ int main()
     struct sockaddr_in server_addr;
     char *data = NULL, buffer[MAX_BUFFER] = {0};
 
+    const in_port_t port = 7777;
     // Allocate memory for data buffer
     data = malloc(64 * sizeof(char));
     if (!data)
@@ -45,7 +45,7 @@ int main()
 
     // Initialize server address structure
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT);
+    server_addr.sin_port = htons(port);
 
     while (1) // Loop to get a valid IP address
     {

@@ -1,3 +1,4 @@
+#include <asm-generic/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <arpa/inet.h>
@@ -5,6 +6,15 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#define MAX_BUFFER 1024
+
+// Find a way to automate this not create in on file in the main function to be able to handle each step of socket creation and data alone and correct
+// Function to create the socket
+// Function to bind the socket to a specific port
+// Function to add the ip address 
+// Function to listen and wait for connections
+// Function to accept connections 
+// Function to send data
 
 int main ()
 {
@@ -28,7 +38,7 @@ int main ()
     // for starting, i am sending a specific message to the client, and receiving a small data size, later on it will accept the data daynamically
     // for testing at the start messages sent and received will be static
     ssize_t client_data_size;
-    char buffer[1024] = { 0 };
+    char buffer[MAX_BUFFER] = { 0 };
     char* hello = "Hello from server";
 
     // Creating the socket, using AF_INET to specify the IP address used (in this case IPV4)
@@ -62,9 +72,10 @@ int main ()
      * depending on what i am using (TCP, UDP, IP) it will affect how the socket handles the data that is used to transfer, therefore i need to specify the level i am working with
      * NOTE: at the start it will use the defults, later on I will try to implement my own custom level and optname variables to use here.
      */
-    int socket_opt = setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
 
-    if(socket_opt < 0)
+    // Later on the SO_REUSEADDR | SO_REUSEPORT will be change when i want one socket server to bind to the specific port I want, because right now i can have multiple server 
+    // listen on the same port which may cause errors down the line, if later I want to have different processes to work together I will need to use these
+    if(setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) < 0)
     {
         perror("Setsockopt Failed");
         return -1;
@@ -130,17 +141,9 @@ int main ()
             if (client_data_size <= 0)
             {
                 if (client_data_size == 0)
-                {
                     printf("Client disconnected\n");
-                    /* close(new_socket); */
-                    /* continue; */
-                } 
                 else 
-                {
                     perror("Read Failed\n");
-                    /* close(new_socket); */
-                    /* continue; */
-                }
                 break;
             }
             buffer[client_data_size] = '\0';
@@ -158,3 +161,14 @@ int main ()
     close(socket_fd);
     return 0;
 }
+//TODO:
+/*
+ * After the clients connects with the server redirect the connection to specific file/function to be able to continue with the private network somehow
+ * Handle all the data that comes from the client and the sent to it
+ * Handle all errors/memeory allocations and freeing the memory correctly
+ * Handle file reading if needed and be able to create a new file from the user to add to a specific path on the network
+ * before connecting to the socket ask the client to create a password to be able to access the socket
+ * Present the client with options to do in the socket, either go to a specific file or directory after entering the password/token
+ * Add levels of security for the files in the server, low medium and high with each its own authentication
+ * */
+
