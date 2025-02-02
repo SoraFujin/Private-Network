@@ -3,11 +3,15 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 // Create a socket and initialize connection
 int create_socket()
 {
+    printf("\t\t----Server----\n\n");
     struct addrinfo hints;
     struct sockaddr_in socket_addr;
     socklen_t socket_addr_length = sizeof(socket_addr);
@@ -76,7 +80,7 @@ int accept_connection(int socket_fd, struct sockaddr_in *socket_addr, socklen_t 
             return -1;
         }
         printf("New connection accepted\n");
-        while( handle_client(connection_socket))
+        while( handle_one_client(connection_socket))
             return 0;
         return 0;
     }
@@ -85,7 +89,7 @@ int accept_connection(int socket_fd, struct sockaddr_in *socket_addr, socklen_t 
 }
 
 // Handle client connection
-int handle_client(int connection_socket)
+int handle_one_client(int connection_socket)
 {
     char buffer[MAX_BUFFER] = {0};
 
@@ -110,3 +114,9 @@ int handle_client(int connection_socket)
     close(connection_socket);
     return 0;
 }
+
+/* int handle_clinets(int connection_socket) */
+/* { */
+/*     int select = select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds, fd_set *restrict exceptfds, struct timeval *restrict timeout); */
+/*     return 0; */
+/* } */
