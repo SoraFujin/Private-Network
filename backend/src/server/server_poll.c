@@ -78,35 +78,37 @@ void read_data_from_socket(int i, struct pollfd **poll_fds, int *poll_count, int
     sender_fd = (*poll_fds)[i].fd;
     memset(&buffer, '\0', sizeof buffer);
     bytes_read = recv(sender_fd, buffer, BUFSIZ, 0);
-    if (bytes_read <= 0) {
-        if (bytes_read == 0) {
+    if (bytes_read <= 0)
+    {
+        if (bytes_read == 0) 
             printf("[%d] Client socket closed connection.\n", sender_fd);
-        }
-        else {
+        else 
             fprintf(stderr, "[Server] Recv error: %s\n", strerror(errno));
-        }
         close(sender_fd); 
         del_from_poll_fds(poll_fds, i, poll_count);
     }
-    else {
+    else
+    {
         printf("[%d] Got message: %s", sender_fd, buffer);
 
         memset(&msg_to_send, '\0', sizeof msg_to_send);
         snprintf(msg_to_send, sizeof(msg_to_send), "[%d] says: %.8180s", sender_fd, buffer);
-        for (int j = 0; j < *poll_count; j++) {
+        for (int j = 0; j < *poll_count; j++) 
+        {
             dest_fd = (*poll_fds)[j].fd;
-            if (dest_fd != server_socket && dest_fd != sender_fd) {
+            if (dest_fd != server_socket && dest_fd != sender_fd) 
+            {
                 status = send(dest_fd, msg_to_send, strlen(msg_to_send), 0);
-                if (status == -1) {
+                if (status == -1) 
                     fprintf(stderr, "[Server] Send error to client fd %d: %s\n", dest_fd, strerror(errno));
-                }
             }
         }
     }
 }
 
 void add_to_poll_fds(struct pollfd *poll_fds[], int new_fd, int *poll_count, int *poll_size) {
-    if (*poll_count == *poll_size) {
+    if (*poll_count == *poll_size) 
+    {
         *poll_size *= 2; 
         *poll_fds = realloc(*poll_fds, sizeof(**poll_fds) * (*poll_size));
     }
@@ -120,62 +122,62 @@ void del_from_poll_fds(struct pollfd **poll_fds, int i, int *poll_count) {
     (*poll_count)--;
 }
 
-int main(void)
-{
-    printf("---- SERVER ----\n\n");
+/* int main(void) */
+/* { */
+/*     printf("\t\t---- SERVER ----\n\n"); */
 
-    int server_socket;
-    int status;
-    struct pollfd *poll_fds; 
-    int poll_size; 
-    int poll_count;
+/*     int server_socket; */
+/*     int status; */
+/*     struct pollfd *poll_fds; */ 
+/*     int poll_size; */ 
+/*     int poll_count; */
 
-    server_socket = create_server_socket();
-    if (server_socket == -1) {
-        return (1);
-    }
+/*     server_socket = create_server_socket(); */
+/*     if (server_socket == -1) */ 
+/*         return (1); */
 
-    printf("[Server] Listening on port %d\n", PORT);
-    status = listen(server_socket, 10);
-    if (status != 0) {
-        fprintf(stderr, "[Server] Listen error: %s\n", strerror(errno));
-        return (3);
-    }
+/*     printf("[Server] Listening on port %d\n", PORT); */
+/*     status = listen(server_socket, 10); */
+/*     if (status != 0) */ 
+/*     { */
+/*         fprintf(stderr, "[Server] Listen error: %s\n", strerror(errno)); */
+/*         return (3); */
+/*     } */
 
-    poll_size = 5;
-    poll_fds = calloc(poll_size + 1, sizeof *poll_fds);
-    if (!poll_fds) {
-        return (4);
-    }
-    poll_fds[0].fd = server_socket;
-    poll_fds[0].events = POLLIN;
-    poll_count = 1;
+/*     poll_size = 5; */
+/*     poll_fds = calloc(poll_size + 1, sizeof *poll_fds); */
+/*     if (!poll_fds) */ 
+/*         return (4); */
+/*     poll_fds[0].fd = server_socket; */
+/*     poll_fds[0].events = POLLIN; */
+/*     poll_count = 1; */
 
-    printf("[Server] Set up poll fd array\n");
+/*     printf("[Server] Set up poll fd array\n"); */
 
-    while (1) {
-        status = poll(poll_fds, poll_count, 2000);
-        if (status == -1) {
-            fprintf(stderr, "[Server] Poll error: %s\n", strerror(errno));
-            exit(1);
-        }
-        else if (status == 0) {
-            printf("[Server] Waiting...\n");
-            continue;
-        }
+/*     while (1) */ 
+/*     { */
+/*         status = poll(poll_fds, poll_count, 2000); */
+/*         if (status == -1) */ 
+/*         { */
+/*             fprintf(stderr, "[Server] Poll error: %s\n", strerror(errno)); */
+/*             exit(1); */
+/*         } */
+/*         else if (status == 0) */ 
+/*         { */
+/*             printf("[Server] Waiting...\n"); */
+/*             continue; */
+/*         } */
 
-        for (int i = 0; i < poll_count; i++) {
-            if ((poll_fds[i].revents & POLLIN) != 1) {
-                continue ;
-            }
-            printf("[%d] Ready for I/O operation\n", poll_fds[i].fd);
-            if (poll_fds[i].fd == server_socket) {
-                accept_new_connection(server_socket, &poll_fds, &poll_count, &poll_size);
-            }
-            else {
-                read_data_from_socket(i, &poll_fds, &poll_count, server_socket);
-            }
-        }
-    }
-    return (0);
-}
+/*         for (int i = 0; i < poll_count; i++) */ 
+/*         { */
+/*             if ((poll_fds[i].revents & POLLIN) != 1) */ 
+/*                 continue ; */
+/*             printf("[%d] Ready for I/O operation\n", poll_fds[i].fd); */
+/*             if (poll_fds[i].fd == server_socket) */ 
+/*                 accept_new_connection(server_socket, &poll_fds, &poll_count, &poll_size); */
+/*             else */ 
+/*                 read_data_from_socket(i, &poll_fds, &poll_count, server_socket); */
+/*         } */
+/*     } */
+/*     return (0); */
+/* } */
