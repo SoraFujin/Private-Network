@@ -15,6 +15,7 @@ int main()
     char *data = NULL, buffer[MAX_BUFFER] = {0};
 
     const in_port_t port = 7777;
+
     // Allocate memory for data buffer
     data = malloc(64 * sizeof(char));
     if (!data)
@@ -82,6 +83,15 @@ int main()
         return -1;
     }
     printf("Connected to the server successfully.\n");
+
+    char *message = "Hello World";
+
+    ssize_t bytesWritten = write(client_fd, message, strlen(message));
+        if (bytesWritten == -1) {
+            perror("Write failed");
+        } else {
+            printf("Sent %ld bytes to the server\n", bytesWritten);
+        }
 
     while (1) // Main communication loop
     {

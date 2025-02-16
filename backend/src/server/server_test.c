@@ -14,13 +14,13 @@
 
 int main()
 {
-
     /* int server_socket = create_socket(); */
     /* if(server_socket < 0) */
     /* { */
     /*     perror("Error creating a socket\n"); */
     /*     return -1; */
     /* } */
+
     printf("\t\t------ SERVER ------\n\n");
 
     int server_socket;
@@ -68,9 +68,9 @@ int main()
         for (int i = 0; i < poll_count; i++) 
         {
             if ((poll_fds[i].revents & POLLIN) != 1) 
-                continue ;
+                continue;
 
-            printf("[%d] Ready for I/O operation\n", poll_fds[i].fd);
+            printf("[%d] Ready for I/O operation\n", poll_fds[i].fd - 3);
             if (poll_fds[i].fd == server_socket) 
                 accept_new_connection(server_socket, &poll_fds, &poll_count, &poll_size);
             else 
@@ -78,4 +78,4 @@ int main()
         }
     }
     return (0);
-    }
+}
