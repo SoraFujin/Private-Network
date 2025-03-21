@@ -92,3 +92,46 @@ backend/
 ---
 
 # 1. Basic Socket Communication:
+
+
+
+
+
+
+
+# Network layers:
+The network consists of layers each responsible for different tasks: <br>
+1. **Application**: Interface for software (Web, messaging) (HTTP, FTP, SSH).
+2. **Transport**: Reliable end-to-end communication (TCP, UDP)
+3. **Network**: Routing and addressing (IP)
+4. **Data Link**: Medium access, framing error detection (Ethernet, Wi-Fi)
+5. **Physical**: Transmission of raw bits (Copper wire, fiber, radio)
+
+
+To be able to build everything from scartch we need to start from the bottom up, therefore starting with the physical layer that focuses on how the bits are being transported through physical hardware.
+
+
+# Physical Layer 
+In this layer, is where data is phyiscally transmitted between devices<br>
+The physical layer is the lowest layer of a network that is responsible for:
+1. Sending and receiving raw bits (0s and 1s)
+2. Defining voltage levels, timing and synchronization between devices 
+3. Choosing a transmission medium (copper wire, fiber, Wireless)
+
+
+### Choices for Physical Transmission:
+Since I have two Arduinos the easist way to send data is through a wired connection but in order to do so there are different methods that can help:
+1. GPIO Direct Signaling: Set HIGH (1) or LOW (0) on a pin, it is simple and needs precise timing
+2. UART (Serial communication): Uses TX/RX pins that is faster and easier, but less control over signal.
+3. SPI/I2C: Uses a clock signal Synchronization built in and is more complex to implement. 
+
+In order to start we need 2 Arduinos (Sender and Receiver), One wire to connect to TX (Sender) -> RX (Receiver) and one common ground GND wire between them.
+
+We use HIGH (5v) for 1 and low (0V) for 0 to be able to send data from the sender to the receiver. With a fixed timing delay (baud rate).
+*baud rate: The measure of the number of changes to the signal per second that propagate througha transmisson medium.*
+The change of high and low voltage from the sender to the reciever.
+
+
+# Data Link Layer 
+Responsible for framing to define how data is structured into pakcets, addressing adn assigning unique IDs (MAC addresses) to devices, detect error and handle transmission errors and the flow control Managing data speed so the receiver is not overwhelmed.
+to implement this layer identify how the frames will be sent what protocol to use, how to use them and how the data is checked if there is an error, either to wait for an ack or sent multiple frames per message depending on the window frame size.
