@@ -8,7 +8,8 @@
 #define MAX_PAYLOAD_SIZE 1024
 #define SOF 0x7E
 #define eof 0x7F
-#define P 0x8005
+/* #define P 0x8005 */
+#define P 0x1021
 
 /** Data Link Layer **/
 /* 
@@ -35,31 +36,30 @@ typedef struct {
     uint8_t length; // Length of the data being sent 
     uint8_t payload[1024]; // The data that is sent 
     uint8_t checksum; // Error detection
-} frame;
+} Frame;
 
 // Create the frame, calculate the data size, calcualte the checksum append everything to the frame, then send it through the frame.
 // The reciever will take the frame reads the SOF checks the data it has, calculate the checksum using the data length, compares the checksum.
 
 // Change the checksum to use CRC-16 encoding to check for any errors
-uint8_t calculate_checksum(uint8_t *data, uint8_t length) //CRC-16 
-{
-    int new_len = length + 16;
-    int crc = (new_len - length) + 1;
-    uint16_t checksum = 0;
-    uint8_t *data_copy;
+uint16_t calculate_checksum(uint8_t *data, uint8_t length) {
+    uint16_t crc = 0xffff; 
 
-    // Copy the original data to a new array 
-    for(int i = 0; i < length - 1; i++) 
-        data_copy[i] = data[i];    
+    for (int i = 0; i < length; i++) {
+        crc ^= (data[i] << 8); 
 
-    for(int i = 0; i < crc; i++) {
-        /* checksum ^= data_copy ^ */ 
+        for (int j = 0; j < 8; j++) {
+            if (crc & 0x8000) {
+                crc = (crc << 1) ^ P;
+            } else {
+                crc <<= 1;
+            }
+        }
     }
-
-    return checksum;
+    return crc; 
 }
 
-void create_frame(uint8_t source, uint8_t destination, char *data, frame *frame)
+void create_frame(uint8_t source, uint8_t destination, char *data, Frame *frame)
 {
     uint16_t data_length = strlen(data);
 
@@ -78,16 +78,17 @@ void create_frame(uint8_t source, uint8_t destination, char *data, frame *frame)
         frame->payload[i] = data[i];
 
     frame->checksum = calculate_checksum(frame->payload, data_length);
+    printf("Check Sum = %d\n", frame->checksum);
 }
 
-int check_integrity(frame *frame)
+int check_integrity(Frame *frame)
 {
     uint8_t checksum = calculate_checksum(frame->payload, frame->length);
     return (checksum == frame->checksum);
 }
 
 // For now i will print the data that is being sent and its length, later own using the source and dest will be sent to the appropriate reciever
-void send_frame(frame *frame)
+void send_frame(Frame *frame)
 {
     if(frame == NULL)
     {
@@ -99,28 +100,27 @@ void send_frame(frame *frame)
     printf("Payload: %s\n", frame->payload);
 }
 
-void recieve_frame(frame *frame)
+int recieve_frame(Frame *frame)
 {
-    int check = check_integrity(frame);
-
-    if(!check)
-    {
-        perror("Error Sending Data");
-        return;
-    }
+    return check_integrity(frame);
 }
-
 
 
 int main(void)
 {
-    frame frm;
+    Frame frm;
     char *data = "Hello World!";
 
     create_frame(0, 0, data, &frm);
 
     printf("Payload Length %d\n", frm.length);
     send_frame(&frm);
+
+
+    if(recieve_frame(&frm))
+    {
+        printf("Recieved\n");
+    }
 
     return 0;
 }
