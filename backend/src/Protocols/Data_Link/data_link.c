@@ -29,6 +29,7 @@
  * 7. NCP (Network Control Protocol)
  * */
 
+// TODO: Work on index based approach instead of structs by defining constants for each index ...
 typedef struct {
     uint16_t sof; //start of the frame 
     uint8_t source; // Where did the data come from 
@@ -36,6 +37,8 @@ typedef struct {
     uint8_t length; // Length of the data being sent 
     uint8_t payload[1024]; // The data that is sent 
     uint8_t checksum; // Error detection
+    uint8_t eop;
+    uint8_t data_size;
 } Frame;
 
 // Create the frame, calculate the data size, calcualte the checksum append everything to the frame, then send it through the frame.
@@ -61,6 +64,7 @@ uint16_t calculate_checksum(uint8_t *data, uint8_t length) {
 
 void create_frame(uint8_t source, uint8_t destination, char *data, Frame *frame)
 {
+    // TODO: the size of the payload to be dyncamically added to memory using malloc
     uint16_t data_length = strlen(data);
 
     if(data_length > MAX_PAYLOAD_SIZE)
@@ -88,8 +92,13 @@ int check_integrity(Frame *frame)
 }
 
 // For now i will print the data that is being sent and its length, later own using the source and dest will be sent to the appropriate reciever
+// The way to send data is to create an array of frames, depending on the size of data, to ease the way to check for the integrity of data and
+// extract the data
 void send_frame(Frame *frame)
 {
+    Frame frm[225]; // Allocate the memory dyncamically instead of static size based on the size of data, max size of packet 56,000 -> check
+                    // Size of the frame 1500 bytes each together to get one whole packet
+                    // this is sent to the socket/server
     if(frame == NULL)
     {
         perror("Error: Frame is empty");
@@ -104,7 +113,6 @@ int recieve_frame(Frame *frame)
 {
     return check_integrity(frame);
 }
-
 
 int main(void)
 {
