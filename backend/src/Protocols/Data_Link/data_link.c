@@ -1,50 +1,24 @@
-#include <complex.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define MAX_PAYLOAD_SIZE 1024
-#define SOF 0x7E
-#define eof 0x7F
-/* #define P 0x8005 */
-#define P 0x1021
-
-/** Data Link Layer **/
-/* 
- * This layer ensures reliable communication between directly connected devices
- * Framing - Defining how data is packaged into frames for transmission.
- * Addressing - Assigining unique IDs to devices so data is sent to the correct recipient .
- * Error detecting - Ensuring data is received correctly without corruption.
- * 
+/**
+ * @file data_link.h
+ * @brief Implementation of a simple Data Link Layer 
  *
- * Protocols inside the Data Link Protocol: 
- * 1. SDLC (Synchronous Data Link)
- * 2. HDLC (High Level Data Link)
- * 3. SLIP (Serial Line Interface Protocol)
- * 4. PPP (Point-To-Point Protocol)
- * 5. LCP (Link Control Protocol)
- * 6. LAP (Link Access Procedure)
- * 7. NCP (Network Control Protocol)
- * */
-
-// TODO: Work on index based approach instead of structs by defining constants for each index ...
-typedef struct {
-    uint16_t sof; //start of the frame 
-    uint8_t source; // Where did the data come from 
-    uint8_t destination; // Where the data is going 
-    uint8_t length; // Length of the data being sent 
-    uint8_t payload[1024]; // The data that is sent 
-    uint8_t checksum; // Error detection
-    uint8_t eop;
-    uint8_t data_size;
-} Frame;
-
+ * This file simulates a basic Data Link Lyaer communication mechanism,
+ * It includes functions for:
+ *  - Framing data for transmission (Start of Frame, Source, Destination, Length, Payload, and Checksum).
+ *  - Calculating checsums using CRC for error detection.
+ *  - Creating frames and sending/receiving them with integrity verification.
+ *
+ *
+ * @author Ahmad Diab
+ * @data 
+ *
+ */
 // Create the frame, calculate the data size, calcualte the checksum append everything to the frame, then send it through the frame.
 // The reciever will take the frame reads the SOF checks the data it has, calculate the checksum using the data length, compares the checksum.
 
-// Change the checksum to use CRC-16 encoding to check for any errors
+#include "./include/data_link.h"
+#include <stdint.h>
+
 uint16_t calculate_checksum(uint8_t *data, uint8_t length) {
     uint16_t crc = 0xffff; 
 
@@ -65,6 +39,7 @@ uint16_t calculate_checksum(uint8_t *data, uint8_t length) {
 void create_frame(uint8_t source, uint8_t destination, char *data, Frame *frame)
 {
     // TODO: the size of the payload to be dyncamically added to memory using malloc
+    // Index based approach
     uint16_t data_length = strlen(data);
 
     if(data_length > MAX_PAYLOAD_SIZE)
@@ -91,7 +66,7 @@ int check_integrity(Frame *frame)
     return (checksum == frame->checksum);
 }
 
-// For now i will print the data that is being sent and its length, later own using the source and dest will be sent to the appropriate reciever
+// For now I will print the data that is being sent and its length, later own using the source and dest will be sent to the appropriate reciever
 // The way to send data is to create an array of frames, depending on the size of data, to ease the way to check for the integrity of data and
 // extract the data
 void send_frame(Frame *frame)
