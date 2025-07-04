@@ -21,7 +21,7 @@
 #define SRC_INDEX    5
 #define LENGTH_INDEX 6
 #define PAYLOAD      7
-#define CRC_INDEX    8
+#define CHECKSUM_INDEX    8
 
 
 

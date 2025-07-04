@@ -179,3 +179,8 @@ Each transmitted unit (frame) follows a consistent format. All fields are access
 4. The receiver uses `SEQ_NUM` and `FLAGS` to reassemble the original file.
 5. Completion is detected when the `final frame` flag is received.
 
+
+
+# First Frame
+
+SOF | start_flag| bytes_seq | seq_num(0) | source | destination | payload_size | payload(1024) | checksum(payload_size);
