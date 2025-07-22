@@ -136,38 +136,39 @@ uint8_t* create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequ
     memcpy(&frame[payload_pos], payload, chunk_size);
     memcpy(&frame[checksum_pos], &checksum, sizeof(checksum));
     
-    // printf("\n======= FRAME IN TEXT =======\n");
-    // printf("SOF: 0x%02X\n", frame[SOF_INDEX]);
-    // printf("SEQ BYTE LENGTH: %u\n", frame[SEQ_BYTE]);
-    // printf("LENGTH BYTE COUNT: %u\n", frame[LENGTH_BYTE]);
-    // printf("SEQUENCE NUMBER: ");
-    // for(int i = 0; i < bytes_seq; i++) {
-    //     printf("%02X ", frame[SEQ_INDEX + i]);
-    // }
-    // printf("\n");
-    // printf("LENGTH: %u\n", length_field);
-    // printf("FLAG: 0x%02X\n", frame[flag_pos]);
-    // printf("DEST: %u\n", frame[dest_pos]);
-    // printf("SRC: %u\n", frame[src_pos]);
-    // printf("PAYLOAD (as text): \"");
-    // fwrite(&frame[payload_pos], 1, chunk_size, stdout);
-    // printf("\"\n");
-    // printf("CHECKSUM: ");
-    // for(int i = 0; i < sizeof(checksum); i++) {
-    //     printf("%02X ", frame[checksum_pos + i]);
-    // }
-    // printf("\n");
-    // printf("========= END OF FRAME =======\n");
-    // printf("\n");
-    // printf("Frames Created \n");
-    // printf("======= HEX DUMP FOR FRAME %d =======\n", frame_count);
-    // for(size_t i = 0; i < frame_size; i++) 
-    //     printf("%02X ", frame[i]);
-    // printf("\n");
-    // printf("Frame size: %zu bytes\n", frame_size);
-    // printf("======= END OF HEX DUMP =======\n");
+    printf("\n======= FRAME IN TEXT =======\n");
+    printf("SOF: 0x%02X\n", frame[SOF_INDEX]);
+    printf("SEQ BYTE LENGTH: %u\n", frame[SEQ_BYTE]);
+    printf("LENGTH BYTE COUNT: %u\n", frame[LENGTH_BYTE]);
+    printf("SEQUENCE NUMBER: ");
+    for(int i = 0; i < bytes_seq; i++) {
+        printf("%02X ", frame[SEQ_INDEX + i]);
+    }
+    printf("\n");
+    printf("LENGTH: %u\n", length_field);
+    printf("FLAG: 0x%02X\n", frame[flag_pos]);
+    printf("DEST: %u\n", frame[dest_pos]);
+    printf("SRC: %u\n", frame[src_pos]);
+    printf("PAYLOAD (as text): \"");
+    fwrite(&frame[payload_pos], 1, chunk_size, stdout);
+    printf("\"\n");
+    printf("CHECKSUM: ");
+    for(int i = 0; i < sizeof(checksum); i++) {
+        printf("%02X ", frame[checksum_pos + i]);
+    }
+    printf("\n");
+    printf("========= END OF FRAME =======\n");
+    printf("\n");
+    printf("Frames Created \n");
+    printf("======= HEX DUMP FOR FRAME %d =======\n", frame_count);
 
-    read_frame(frame);
+    for(size_t i = 0; i < frame_size; i++) 
+        printf("%02X ", frame[i]);
+    printf("\n");
+    printf("Frame size: %zu bytes\n", frame_size);
+    printf("======= END OF HEX DUMP =======\n");
+
+    // read_frame(frame);
     xfree(frame);
     return frame;
 }
