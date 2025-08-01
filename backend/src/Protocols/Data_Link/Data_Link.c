@@ -1,12 +1,13 @@
 #include "include/data_link.h"
 #include "../../utils/memory_utils.c"
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
 
 int main(void) 
 {
-    // size_t large_data_size = 1ULL * 1024 * 1024 * 1024 + 900;
+    // size_t large_data_size = 1ULL * 1024 * 1024 + 900;
     // uint8_t *large_data = xmalloc(large_data_size);
 
     // for (size_t i = 0; i < large_data_size; i++) {
@@ -38,13 +39,8 @@ int main(void)
         "BLOCK0181_BLOCK0182_BLOCK0183_BLOCK0184_BLOCK0185_BLOCK0186_BLOCK0187_BLOCK0188_BLOCK0189_BLOCK0190_"
         "BLOCK0191_BLOCK0192_BLOCK0193_BLOCK0194_BLOCK0195_BLOCK0196_BLOCK0197_BLOCK0198_BLOCK0199_BLOCK0200_";
 
-    size_t size_data = strlen(big_test_data);
-    // printf("Size of data: %zu\n", size_data);
-    // frame = allocate_payload((uint8_t*)big_test_data, strlen(big_test_data), 1, 2);
-    // size_t frame_size = sizeof(frame);
-    // printf("frame size %zu\n", frame_size);
     allocate_payload((uint8_t*)big_test_data, strlen(big_test_data), 1, 2);
-    // read_frame(frame);
+
     return 0;
 }
 
@@ -65,7 +61,7 @@ uint16_t calculate_checksum(const uint8_t *data, uint8_t length) {
     return crc; 
 }
 
-int seq_num_bytes(size_t payload_size, uint32_t number_of_frames)
+int seq_num_bytes(uint32_t number_of_frames)
 {
     if (number_of_frames <= 0) {
         return 0;
@@ -83,12 +79,12 @@ int seq_num_bytes(size_t payload_size, uint32_t number_of_frames)
 /*
  * FRAME:  SOF | SEQ_BYTE | LENGTH_BYTE | SEQ_NUM | LENGTH | FLAG | DEST | SRC | PAYLOAD | CHECKSUM;
  * */
-uint8_t* create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence_number, size_t chunk_size, uint8_t source, uint8_t dest, uint16_t checksum)
+void create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence_number, size_t chunk_size, uint8_t source, uint8_t dest, uint16_t checksum)
 {
     static int frame_count = 0;
     frame_count++;
     uint32_t number_of_frames = (payload_size + MAX_PAYLOAD_SIZE - 1) / MAX_PAYLOAD_SIZE;
-    int bytes_seq = seq_num_bytes(payload_size, number_of_frames);
+    int bytes_seq = seq_num_bytes(number_of_frames);
     
     uint32_t length_field;
     if(sequence_number == 0) {
@@ -113,7 +109,7 @@ uint8_t* create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequ
     size_t checksum_pos = payload_pos + chunk_size;
     
     size_t frame_size = checksum_pos + sizeof(checksum);
-    frame = xmalloc(frame_size);
+    uint8_t* frame = xmalloc(frame_size);
     
     frame[SOF_INDEX] = SOF;
     frame[SEQ_BYTE] = bytes_seq;
@@ -136,46 +132,45 @@ uint8_t* create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequ
     memcpy(&frame[payload_pos], payload, chunk_size);
     memcpy(&frame[checksum_pos], &checksum, sizeof(checksum));
     
-    printf("\n======= FRAME IN TEXT =======\n");
-    printf("SOF: 0x%02X\n", frame[SOF_INDEX]);
-    printf("SEQ BYTE LENGTH: %u\n", frame[SEQ_BYTE]);
-    printf("LENGTH BYTE COUNT: %u\n", frame[LENGTH_BYTE]);
-    printf("SEQUENCE NUMBER: ");
-    for(int i = 0; i < bytes_seq; i++) {
-        printf("%02X ", frame[SEQ_INDEX + i]);
-    }
-    printf("\n");
-    printf("LENGTH: %u\n", length_field);
-    printf("FLAG: 0x%02X\n", frame[flag_pos]);
-    printf("DEST: %u\n", frame[dest_pos]);
-    printf("SRC: %u\n", frame[src_pos]);
-    printf("PAYLOAD (as text): \"");
-    fwrite(&frame[payload_pos], 1, chunk_size, stdout);
-    printf("\"\n");
-    printf("CHECKSUM: ");
-    for(int i = 0; i < sizeof(checksum); i++) {
-        printf("%02X ", frame[checksum_pos + i]);
-    }
-    printf("\n");
-    printf("========= END OF FRAME =======\n");
-    printf("\n");
-    printf("Frames Created \n");
-    printf("======= HEX DUMP FOR FRAME %d =======\n", frame_count);
+    // printf("\n======= FRAME IN TEXT =======\n");
+    // printf("SOF: 0x%02X\n", frame[SOF_INDEX]);
+    // printf("SEQ BYTE LENGTH: %u\n", frame[SEQ_BYTE]);
+    // printf("LENGTH BYTE COUNT: %u\n", frame[LENGTH_BYTE]);
+    // printf("SEQUENCE NUMBER: ");
+    // for(int i = 0; i < bytes_seq; i++) {
+    //     printf("%02X ", frame[SEQ_INDEX + i]);
+    // }
+    // printf("\n");
+    // printf("LENGTH: %u\n", length_field);
+    // printf("FLAG: 0x%02X\n", frame[flag_pos]);
+    // printf("DEST: %u\n", frame[dest_pos]);
+    // printf("SRC: %u\n", frame[src_pos]);
+    // printf("PAYLOAD (as text): \"");
+    // fwrite(&frame[payload_pos], 1, chunk_size, stdout);
+    // printf("\"\n");
+    // printf("CHECKSUM: ");
+    // for(size_t i = 0; i < sizeof(checksum); i++) {
+    //     printf("%02X ", frame[checksum_pos + i]);
+    // }
+    // printf("\n");
+    // printf("========= END OF FRAME =======\n");
+    // printf("\n");
+    // printf("Frames Created \n");
+    // printf("======= HEX DUMP FOR FRAME %d =======\n", frame_count);
 
-    for(size_t i = 0; i < frame_size; i++) 
-        printf("%02X ", frame[i]);
-    printf("\n");
-    printf("Frame size: %zu bytes\n", frame_size);
-    printf("======= END OF HEX DUMP =======\n");
+    // for(size_t i = 0; i < frame_size; i++) 
+    //     printf("%02X ", frame[i]);
+    // printf("\n");
+    // printf("Frame size: %zu bytes\n", frame_size);
+    // printf("======= END OF HEX DUMP =======\n");
 
-    // read_frame(frame);
+    read_frame(frame, frame_size, number_of_frames);
     xfree(frame);
-    return frame;
 }
 
 void allocate_payload(uint8_t *payload, size_t payload_size, uint8_t source, uint8_t dest) 
 {
-    int offset = 0;
+    size_t offset = 0;
     uint8_t *chunk = 0;
     size_t chunk_size = 0;
     uint32_t sequence_number = 0;
@@ -190,100 +185,71 @@ void allocate_payload(uint8_t *payload, size_t payload_size, uint8_t source, uin
         }
         offset += chunk_size;
         uint16_t checksum = calculate_checksum(chunk, chunk_size);
-        frame = create_frame(chunk, payload_size, sequence_number, chunk_size, source, dest, checksum);
+        create_frame(chunk, payload_size, sequence_number, chunk_size, source, dest, checksum);
         sequence_number++;
     }
 }
 
-int read_frame(uint8_t *frame)
+// * FRAME:  SOF | SEQ_BYTE | LENGTH_BYTE | SEQ_NUM | LENGTH | FLAG | DEST | SRC | PAYLOAD | CHECKSUM;
+void read_frame(uint8_t *frame, size_t frame_size, size_t number_of_frames)
 {
     static size_t frame_count = 0;
     frame_count++;
+    
     size_t sof = 0;
     memcpy(&sof, &frame[SOF_INDEX], 1);
-
-    // uint8_t *frame_rec = xmalloc(1+1);
-    // memcpy(&frame_rec[SOF_INDEX], &frame[SOF_INDEX], 1);
+    printf("Start Of Frame (SOF): 0x%02X\n", (unsigned int)sof & 0xFF);
+    
     size_t seq_bytes_pos = 0;
     memcpy(&seq_bytes_pos, &frame[SEQ_BYTE], 1);
-
-    size_t seq_bytes;
-    if(frame[SEQ_BYTE] <= 1) {
-        seq_bytes = 1;
-    }
-    else if(frame[SEQ_BYTE] <= 2) {
-        // frame_rec[SEQ_BYTE] = 2;
-        seq_bytes = 2;
-    }
-    else if(frame[SEQ_BYTE] <= 4) {
-        // frame_rec[SEQ_BYTE] = 4;
-        seq_bytes = 4;
-    }
-
-    size_t length_pos = SOF_INDEX + seq_bytes;
-    size_t bytes_length;
-
-    if(frame[length_pos] <= 1) {
-        // frame_rec[length_pos] = 1;
-        bytes_length = 1;
-    }
-    else if(frame[length_pos] <= 2) {
-        // frame_rec[length_pos] = 2;
-        bytes_length = 2;
-    }
-    else if(frame[length_pos] <= 4) {
-        // frame_rec[length_pos] = 4;
-        bytes_length = 4;
-    }
-
-    size_t flag_pos = SEQ_INDEX + length_pos;
-    size_t dest_pos = flag_pos + 1;
-    size_t src_pos = dest_pos + 1;
-    size_t payload_pos = src_pos + 1;
-    size_t checksum_pos = payload_pos + 1;
-
+    printf("Bytes needed to represent seq num: %zu \n", seq_bytes_pos);
+    
+    size_t len_bytes = 0;
+    memcpy(&len_bytes, &frame[LENGTH_BYTE], 1);
+    printf("Bytes needed to represent the length: %zu \n", len_bytes);
+    
     size_t seq_num = 0;
-    memcpy(&seq_num, &frame[SEQ_INDEX], seq_bytes);
-
+    memcpy(&seq_num, &frame[SEQ_INDEX], seq_bytes_pos);
+    printf("Seq Number: %zu \n", seq_num);
+    
+    size_t length_pos = SEQ_INDEX + seq_bytes_pos;
+    size_t length = 1024;  
+    
+    if (seq_num == number_of_frames) {
+        memcpy(&length, &frame[length_pos], len_bytes);
+        printf("Payload Length: %zu \n", length);
+    }
+    
+    size_t flag_pos = length_pos + len_bytes;
     size_t flag = 0;
     memcpy(&flag, &frame[flag_pos], 1);
-
+    printf("Flag: 0x%02X\n", (unsigned int)flag & 0xFF);
+    
+    size_t dest_pos = flag_pos + 1;
     size_t dest = 0;
     memcpy(&dest, &frame[dest_pos], 1);
-
+    printf("Destination: %zu \n", dest);
+    
+    size_t src_pos = dest_pos + 1;
     size_t src = 0;
     memcpy(&src, &frame[src_pos], 1);
-
-    size_t payload = 0;
-    memcpy(&payload, &frame[payload_pos], length_pos);
-
+    printf("source: %zu \n", src);
+    
+    size_t payload_pos = src_pos + 1;
+    uint8_t* payload = xmalloc(length);
+    memcpy(payload, &frame[payload_pos], length);
+    
+    size_t checksum_pos = payload_pos + length;
     size_t checksum = 0;
     memcpy(&checksum, &frame[checksum_pos], 2);
-
-    size_t checksum_size = sizeof(checksum);
-    size_t frame_size = checksum_pos + sizeof(checksum);
-    printf("checksum size recieved %zu, frame size recieved %zu\n", checksum_size, frame_size);
-    uint8_t* frame_rec = xmalloc(frame_size);
-
-     // * FRAME:  SOF | SEQ_BYTE | LENGTH_BYTE | SEQ_NUM | LENGTH | FLAG | DEST | SRC | PAYLOAD | CHECKSUM;
-    frame_rec[SOF_INDEX] = sof;
-    frame_rec[seq_bytes] = bytes_length;
-    frame_rec[length_pos] = bytes_length;
-    frame_rec[SEQ_INDEX] = seq_num;
-    frame_rec[flag_pos] = flag;
-    frame_rec[dest_pos] = dest;
-    frame_rec[src_pos] = src;
-    frame_rec[payload_pos] = payload;
-    frame_rec[checksum_pos] = checksum;
-
-    printf("Printing the frame recieved \n");
+    printf("Checksum: 0x%04X \n", (unsigned int)checksum & 0xFFFF);
+    
     printf("Frame Size = %zu \n", frame_size);
-    printf("======= Frame Recieved %zu =======\n", frame_count);
+    printf("======= Frame Received %zu =======\n", frame_count);
     for(size_t i = 0; i < frame_size; i++)
         printf("%02X ", frame[i]);
     printf("\n");
     printf("======= Frame End =======\n");
-
-    xfree(frame_rec);
-    return 0;
+    
+    xfree(payload);
 }

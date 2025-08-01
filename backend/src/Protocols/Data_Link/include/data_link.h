@@ -17,12 +17,12 @@
 #define LENGTH_BYTE    2
 #define SEQ_INDEX      3
 
-static uint8_t* frame;
+// static uint8_t* frame;
 
 uint16_t calculate_checksum(const uint8_t *data, uint8_t length);
-int seq_num_bytes(size_t payload_size, uint32_t number_of_frames);
-uint8_t* create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence_number, size_t chunk_size, uint8_t source, uint8_t dest, uint16_t checksum);
+int seq_num_bytes(uint32_t number_of_frames);
+void create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence_number, size_t chunk_size, uint8_t source, uint8_t dest, uint16_t checksum);
 void allocate_payload(uint8_t *payload, size_t payload_size, uint8_t source, uint8_t dest);
-int read_frame(uint8_t *frame);
+void read_frame(uint8_t *frame, size_t frame_size, size_t number_of_frames);
 #endif 
 
