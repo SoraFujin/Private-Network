@@ -17,9 +17,6 @@
 
 #include "include/data_link.h"
 #include "../../utils/memory_utils.c"
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
 
 /**
  * @brief Main function demonstrating the data link layer functionality
@@ -203,6 +200,7 @@ void create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence
     // Copy variable-length length field
     memcpy(&frame[length_pos], &length_field, bytes_length);
     
+    // TODO: Find actual flags for the frame
     // Set frame type flag based on sequence position
     if(sequence_number == 0) {
         frame[flag_pos] = 0xA5; // Start frame flag
@@ -222,9 +220,6 @@ void create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence
     // Copy checksum for error detection
     memcpy(&frame[checksum_pos], &checksum, sizeof(checksum));
     
-    // Debug output (commented out for production)
-    // [Previous debug printf statements remain commented]
-
     // Simulate frame transmission and reception
     read_frame(frame, frame_size, number_of_frames);
     
@@ -329,13 +324,26 @@ void read_frame(uint8_t *frame, size_t frame_size, size_t number_of_frames)
     
     // Calculate length field position
     size_t length_pos = SEQ_INDEX + seq_bytes_pos;
-    size_t length = 1024;  // Default assumption (FIXME: This should always be read from frame)
+    size_t length = 0;  // All frames except the first and last frame will have a length of 1024.
+                           // The first will contain the length of the entire payload.
+                           // The last might not fill the entire 1024 could be less.
     
-    // FIXME: Logic error - should read length for all frames, not just the last
+    size_t last_payload_len = 0;
+    memcpy(&length, &frame[length_pos], len_bytes);
+    printf("Length: %zu\n", length);
+    size_t payload_len = 0;
     if (seq_num == number_of_frames) {
-        memcpy(&length, &frame[length_pos], len_bytes);
-        printf("Payload Length: %zu \n", length);
+        memcpy(&last_payload_len, &frame[length_pos], len_bytes);
+        printf("Payload Length: %zu \n", last_payload_len);
+    } else if(seq_num == 0) {
+        memcpy(&payload_len, &frame[length_pos], len_bytes);
+        printf("Payload Length: %zu\n", payload_len);
     }
+
+    size_t full_payload_len = length + last_payload_len;
+
+    printf("Full payload length: %zu\n", full_payload_len);
+
     
     // Extract frame control flag
     size_t flag_pos = length_pos + len_bytes;
@@ -379,3 +387,13 @@ void read_frame(uint8_t *frame, size_t frame_size, size_t number_of_frames)
     // Clean up allocated payload memory
     xfree(payload);
 }
+
+// TODO: Add another function to send the frame to physical layer.
+void send_to_physical_layer()
+{
+
+}
+
+// TODO: MAC Addressing, instead of the 1 byte for destination and source, it should have 48-bit for mac addresses.
+// TODO: Re-transmission Logic; if a packet is lost need some kind of ACK/NACK (Acknowledgment/Negative Acknowledgment) mechanism to resend the packet.
+// TODO: Change the fixed MAX_PAYLOAD_SIZE to be dynamic and determined between nodes when communicating.
