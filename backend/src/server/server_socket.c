@@ -68,9 +68,9 @@ int main ()
      * a state when a connection is recently closed but is still in the process of cleaning up resources. 
      * This is useful when the server is restarted and the bind hte same port without waiting for system to release the port.
      * optval: to let the setsockopt know if the options that i am using are enabled or disabled, in this case (1) which means enabled 
-     * SIDE NOTE: For the second option (level), if i am working on a specific level (layer) i can specify exactly what protocol a socket uses,
+     *  NOTE: For the second option (level), if i am working on a specific level (layer) i can specify exactly what protocol a socket uses,
      * depending on what i am using (TCP, UDP, IP) it will affect how the socket handles the data that is used to transfer, therefore i need to specify the level i am working with
-     * NOTE: at the start it will use the defults, later on I will try to implement my own custom level and optname variables to use here.
+     *  NOTE: at the start it will use the defults, later on I will try to implement my own custom level and optname variables to use here.
      */
 
     // Later on the SO_REUSEADDR | SO_REUSEPORT will be change when i want one socket server to bind to the specific port I want, because right now i can have multiple server 
@@ -161,7 +161,7 @@ int main ()
     close(socket_fd);
     return 0;
 }
-//TODO:
+//  TODO:
 /*
  * After the clients connects with the server redirect the connection to specific file/function to be able to continue with the private network somehow
  * Handle all the data that comes from the client and the sent to it
