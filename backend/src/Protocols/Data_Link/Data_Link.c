@@ -1,25 +1,25 @@
-// TODO: MAC Addressing, instead of the 1 byte for destination and source, it should have 48-bit for mac addresses.
-// TODO: Re-transmission Logic; if a packet is lost need some kind of ACK/NACK (Acknowledgment/Negative Acknowledgment) mechanism to resend the packet.
+// TODO: MAC Addressing, instead of the 1 byte for destination and source, it should have 48-bit for mac addresses. TODO: Re-transmission Logic; if a packet is lost need some kind of ACK/NACK (Acknowledgment/Negative Acknowledgment) mechanism to resend the packet.
 // TODO: Change the fixed MAX_PAYLOAD_SIZE to be dynamic and determined between nodes when communicating.
 // TODO: fix the read function, according to number of frames & sequence number
 // FIXME: Fix the how the data is being processed by using an actual data structure like a queue to order the incoming and outgoing data
 // TODO: Fnd a way to send actual packets to other layers and how to recieve the packets when other layers send them
-// TODO: FIND A WAY EITHER KEEP INDEX BASED APPROACH OR USE STRUCT
+// FIXME: FIND A WAY EITHER KEEP INDEX BASED APPROACH OR USE STRUCT
 
 #include "include/data_link.h"
 #include "../../utils/memory_utils.c"
+#include <stdio.h>
 uint8_t *frame;
 uint8_t *frame_read;
 
 int main(void) 
 {
-    size_t large_data_size = 1ULL * 1024 * 1024;
+    size_t large_data_size = 1ULL * 1024 * 264;
     uint8_t *large_data = xmalloc(large_data_size);
-
-    // NOTE: This is just a sample data that is large enough to test the sending functionality of Data link layer
-    for (size_t i = 0; i < large_data_size; i++) {
-        large_data[i] = (uint8_t)((i % 26) + 'A');  // Cycles through A-Z
-    }
+    //
+    // // NOTE: This is just a sample data that is large enough to test the sending functionality of Data link layer
+    // for (size_t i = 0; i < large_data_size; i++) {
+    //     large_data[i] = (uint8_t)((i % 26) + 'A');  // Cycles through A-Z
+    // }
 
     allocate_payload((uint8_t*)large_data, large_data_size, 1, 2);
     xfree(large_data);
@@ -45,7 +45,7 @@ int main(void)
     //     "BLOCK0171_BLOCK0172_BLOCK0173_BLOCK0174_BLOCK0175_BLOCK0176_BLOCK0177_BLOCK0178_BLOCK0179_BLOCK0180_"
     //     "BLOCK0181_BLOCK0182_BLOCK0183_BLOCK0184_BLOCK0185_BLOCK0186_BLOCK0187_BLOCK0188_BLOCK0189_BLOCK0190_"
     //     "BLOCK0191_BLOCK0192_BLOCK0193_BLOCK0194_BLOCK0195_BLOCK0196_BLOCK0197_BLOCK0198_BLOCK0199_BLOCK0200_";
-
+    //
     // Process the test data: source=1, destination=2
     // allocate_payload((uint8_t*)big_test_data, strlen(big_test_data), 1, 2);
     return 0;
@@ -84,15 +84,15 @@ int seq_num_bytes(uint32_t number_of_frames)
 }
 
 // TODO: Add another function to send the frame to physical layer.
-void send_to_physical_layer(uint8_t *frame, size_t frame_size, size_t number_of_frames)
-{
-
-}
-
-void send_payload(uint8_t *frame, size_t frame_size, size_t number_of_frames)
-{
-
-}
+// void send_to_physical_layer(uint8_t *frame, size_t frame_size, size_t number_of_frames)
+// {
+//
+// }
+//
+// void send_payload(uint8_t *frame, size_t frame_size, size_t number_of_frames)
+// {
+//
+// }
 
 void create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence_number, size_t chunk_size, uint8_t source, uint8_t dest, uint16_t checksum)
 {
@@ -114,6 +114,7 @@ void create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence
     }
     
     // Determine optimal byte count for length field
+    // TODO: this is a separate function that determines how many bytes are needed for the length field in the frame
     int bytes_length;
     if(length_field <= 0xFF)
         bytes_length = 1;      // uint8_t
@@ -135,9 +136,9 @@ void create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence
     frame = xmalloc(frame_size);
     
     // Build frame header
-    frame[SOF_INDEX]   = SOF;              // Start of Frame marker
+    frame[SOF_INDEX]   = SOF;               // Start of Frame marker
     frame[SEQ_BYTE]    = bytes_seq;         // Bytes used for sequence number
-    frame[LENGTH_BYTE] = bytes_length;   // Bytes used for length field
+    frame[LENGTH_BYTE] = bytes_length;      // Bytes used for length field
     
     // Copy variable-length sequence number
     memcpy(&frame[SEQ_INDEX], &sequence_number, bytes_seq);
@@ -166,7 +167,7 @@ void create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence
     memcpy(&frame[checksum_pos], &checksum, sizeof(checksum));
     
     // Simulate frame transmission and reception
-    // read_frame(frame, frame_size, number_of_frames);
+    read_frame(frame, frame_size, number_of_frames);
     
     // Clean up allocated memory
     xfree(frame);
@@ -174,11 +175,11 @@ void create_frame(const uint8_t *payload, size_t payload_size, uint32_t sequence
 
 void allocate_payload(uint8_t *payload, size_t payload_size, uint8_t source, uint8_t dest) 
 {
-    size_t offset = 0;               // Current position in payload
-    uint8_t *chunk = 0;              // Pointer to current chunk
-    size_t chunk_size = 0;           // Size of current chunk
-    uint32_t sequence_number = 0;    // Frame sequence counter
-    
+    size_t offset            = 0;               // Current position in payload
+    uint8_t *chunk           = 0;               // Pointer to current chunk
+    size_t chunk_size        = 0;               // Size of current chunk
+    uint32_t sequence_number = 0;               // Frame sequence counter
+
     // Process payload in chunks until complete
     while (payload_size > offset)
     {
@@ -283,13 +284,16 @@ void read_frame(uint8_t *frame, size_t frame_size, size_t number_of_frames)
     
     // Display frame summary
     printf("Frame Size = %zu \n", frame_size);
-    printf("======= Frame Received %zu =======\n", frame_count);
+    printf("=======================================================================================================================================\n");
+    printf("\t\t\t\t\t\t======= Frame Received %zu =======\n", frame_count);
     
     // Hex dump of entire frame
     for(size_t i = 0; i < frame_size; i++)
         printf("%02X ", frame[i]);
     printf("\n");
-    printf("======= Frame End =======\n");
+    printf("\t\t\t\t\t\t========== Frame End ============\n");
+    printf("=======================================================================================================================================\n");
+    printf("\n");
     
     // Clean up allocated payload memory
     xfree(payload);

@@ -8,7 +8,6 @@
 #include <string.h>
 #include <stddef.h>
 
-
 #define MAX_PAYLOAD_SIZE 1024
 #define SOF 0x7E
 #define P 0x1021  // Polynomial for CRC
